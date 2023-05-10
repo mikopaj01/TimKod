@@ -1,0 +1,6 @@
+sample0 - nie, entropia nieznacznie maleje dla rzędu zerowego i pierwszego
+sample1 - tak, podobne wyniki do języków naturalnych
+sample2 - nie, entropia nieznacznie maleje dla rzędu zerowego i pierwszego
+sample3 - tak, podobne wyniki do języków naturalnych
+sample4 - nie, entropia dla liter gwałtownie spada dla wyższych rzędów
+sample5 - nie, błędne wyniki entropii
