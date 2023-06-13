@@ -1,5 +1,6 @@
 import numpy as np
-
+import bitarray
+import time
 
 alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
             'v', 'w', 'x', 'y', 'z', ' ', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
@@ -70,19 +71,25 @@ def save(code_file_name, code, bin_file_name, encode_text):
         for text, num in code.items():
             result.write(text + ";" + str(num) + ";")
 
-    with open(bin_file_name, 'w') as bin_file:
-        bin_file.write(encode_text)
+    bits = bitarray.bitarray(encode_text)
+
+    with open(bin_file_name, 'wb') as bin_file:
+        bits.tofile(bin_file)
 
 
-def load(code_file_name, bin_file_name):
+
+def load(code_file_name, bin_file_name, len_text):
     code_file = open(code_file_name).read()
     splitted_code = code_file.split(";")
     code = {}
     for i in range(0, len(splitted_code) - 1, 2):
         code[splitted_code[i]] = splitted_code[i + 1]
 
-    with open(bin_file_name, 'r') as fh:
-        text = fh.read()
+    bits = bitarray.bitarray()
+    with open(bin_file_name, 'rb') as bin_file:
+        bits.fromfile(bin_file)
+    text = bits.to01()[:len_text]
+
     return text, code
 
 
@@ -100,14 +107,16 @@ def avg_length(code, text_len, count_dict):
 
 
 if __name__ == "__main__":
+    start = time.time()
     text_file = open("norm_wiki_sample.txt").read()
     code = create(text_file)
     encode_text = encode(text_file, code)
     decode_text = decode(encode_text, code)
     print("Czy tekst po zakodowaniu i zdekodowaniu ten sam? ", text_file == decode_text)
-    save("code.txt", code, "encoded_text.txt", encode_text)
+    save("code.txt", code, "encoded_text.bin", encode_text)
     # sprawdzenie ładowania danych z pliku
-    encode_text, code = load("code.txt", "encoded_text.txt")
+    len_text = len(encode_text)
+    encode_text, code = load("code.txt", "encoded_text.bin", len_text)
     decode_text_from_file = decode(encode_text, code)
     print("Czy tekst po zakodowaniu i zdekodowaniu ten sam (z pliku)? ", text_file == decode_text_from_file)
     print("Współczynnik kompresji wynosi: ", compression_ratio(text_file, code))
@@ -118,4 +127,6 @@ if __name__ == "__main__":
     text_entropy = np.sum([(value[1] / len_text) * np.log2(value[1] / len_text) for value in count_dict]) * -1
     print("Entropia: ", text_entropy)
     print("Efektywność kodowania: ", text_entropy / avg_length_code)
+    end = time.time()
+    print("Czas trwania programu: ", end - start)
 
